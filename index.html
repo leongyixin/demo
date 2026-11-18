@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEN Student Progress Tracker</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" aria-label="Main navigation">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🌱</span>
+      <div>
+        <div class="brand-name">SEN Tracker</div>
+        <div class="brand-sub">Student Progress</div>
+      </div>
+    </div>
+
+    <nav>
+      <ul class="nav-list">
+        <li><button class="nav-btn active" data-view="dashboard">
+          <span class="nav-ico" aria-hidden="true">📊</span> Dashboard</button></li>
+        <li><button class="nav-btn" data-view="students">
+          <span class="nav-ico" aria-hidden="true">🧑‍🎓</span> Students</button></li>
+        <li><button class="nav-btn" data-view="daily">
+          <span class="nav-ico" aria-hidden="true">📝</span> Daily Progress</button></li>
+        <li><button class="nav-btn" data-view="insights">
+          <span class="nav-ico" aria-hidden="true">🤖</span> AI Insights</button></li>
+        <li><button class="nav-btn" data-view="reports">
+          <span class="nav-ico" aria-hidden="true">📄</span> Reports</button></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p class="privacy-note">🔒 All data stays on this device.<br>Demo data only — no real student information.</p>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main id="main" class="main">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="view-dashboard" class="view active" aria-label="Dashboard">
+      <header class="view-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="view-sub">A snapshot of your class's learning progress.</p>
+        </div>
+        <button class="btn btn-primary" data-goto="daily">+ Record Today's Progress</button>
+      </header>
+
+      <div class="stat-grid" id="stat-grid"><!-- filled by JS --></div>
+
+      <div class="dash-cols">
+        <div class="card">
+          <h2 class="card-title">Class Average — This Week vs Last Week</h2>
+          <p class="card-sub">Average score per skill area (0–5 scale)</p>
+          <div class="chart-wrap"><canvas id="chart-avg" height="230" role="img" aria-label="Bar chart comparing class average scores per skill area this week versus last week"></canvas></div>
+        </div>
+        <div class="card">
+          <h2 class="card-title">Today's Records</h2>
+          <p class="card-sub">Recent daily progress entries</p>
+          <ul class="recent-list" id="recent-list"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Student Progress Overview</h2>
+        <p class="card-sub">Click a student to open their profile</p>
+        <div class="table-wrap">
+          <table class="table" id="overview-table">
+            <thead>
+              <tr>
+                <th scope="col">Student</th>
+                <th scope="col">Communication</th>
+                <th scope="col">Social</th>
+                <th scope="col">Cognitive</th>
+                <th scope="col">Daily Living</th>
+                <th scope="col">Overall</th>
+              </tr>
+            </thead>
+            <tbody id="overview-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- STUDENTS ---------- -->
+    <section id="view-students" class="view" aria-label="Students">
+      <header class="view-header">
+        <div>
+          <h1>Student Profiles</h1>
+          <p class="view-sub">Create and manage individual student profiles and learning goals.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-add-student">+ Add Student</button>
+      </header>
+      <div class="student-grid" id="student-grid"></div>
+    </section>
+
+    <!-- ---------- DAILY PROGRESS ---------- -->
+    <section id="view-daily" class="view" aria-label="Daily Progress">
+      <header class="view-header">
+        <div>
+          <h1>Daily Progress Tracking</h1>
+          <p class="view-sub">Rate today's performance and jot down observations.</p>
+        </div>
+      </header>
+
+      <div class="card">
+        <form id="daily-form">
+          <div class="form-row">
+            <div class="field">
+              <label for="df-student">Student</label>
+              <select id="df-student" required></select>
+            </div>
+            <div class="field">
+              <label for="df-date">Date</label>
+              <input type="date" id="df-date" required>
+            </div>
+          </div>
+
+          <fieldset class="ratings-fieldset">
+            <legend>Skill ratings <span class="muted">(0 = needs lots of support · 5 = independent)</span></legend>
+            <div class="rating-row" data-skill="communication">
+              <div class="rating-label"><strong>💬 Communication</strong><span class="rating-desc">Expressing needs, following instructions</span></div>
+              <div class="stars" role="radiogroup" aria-label="Communication rating"></div>
+            </div>
+            <div class="rating-row" data-skill="social">
+              <div class="rating-label"><strong>🤝 Social Interaction</strong><span class="rating-desc">Turn-taking, playing with peers</span></div>
+              <div class="stars" role="radiogroup" aria-label="Social interaction rating"></div>
+            </div>
+            <div class="rating-row" data-skill="cognitive">
+              <div class="rating-label"><strong>🧠 Cognitive Skills</strong><span class="rating-desc">Attention, problem solving, academics</span></div>
+              <div class="stars" role="radiogroup" aria-label="Cognitive skills rating"></div>
+            </div>
+            <div class="rating-row" data-skill="daily">
+              <div class="rating-label"><strong>🥣 Daily Living</strong><span class="rating-desc">Self-care, routines, independence</span></div>
+              <div class="stars" role="radiogroup" aria-label="Daily living skills rating"></div>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="df-notes">Teacher observations <span class="muted">(what went well, what was tricky — the AI summary uses this)</span></label>
+            <textarea id="df-notes" rows="4" placeholder="e.g. Used picture cards to ask for a break instead of crying. Needed two reminders during circle time."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Entry</button>
+            <span id="daily-form-msg" class="save-msg" role="status" aria-live="polite"></span>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Entry History</h2>
+        <div class="filter-row">
+          <label for="filter-student" class="sr-only">Filter by student</label>
+          <select id="filter-student"><option value="">All students</option></select>
+        </div>
+        <ul class="history-list" id="history-list"></ul>
+      </div>
+    </section>
+
+    <!-- ---------- AI INSIGHTS ---------- -->
+    <section id="view-insights" class="view" aria-label="AI Insights">
+      <header class="view-header">
+        <div>
+          <h1>AI Progress Insights</h1>
+          <p class="view-sub">Analyses ratings and teacher observations to summarise progress.</p>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="form-row">
+          <div class="field">
+            <label for="ins-student">Student</label>
+            <select id="ins-student"></select>
+          </div>
+          <div class="field">
+            <label for="ins-range">Analysis period</label>
+            <select id="ins-range">
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="all">All time</option>
+            </select>
+          </div>
+          <div class="field field-btn">
+            <button class="btn btn-primary" id="btn-generate-insight">✨ Generate Insights</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="insight-output" class="insight-output" aria-live="polite">
+        <div class="empty-state">
+          <span class="empty-ico" aria-hidden="true">🤖</span>
+          <p>Select a student and click <strong>Generate Insights</strong> to see an AI-assisted summary of their progress.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- REPORTS ---------- -->
+    <section id="view-reports" class="view" aria-label="Reports">
+      <header class="view-header">
+        <div>
+          <h1>Progress Reports</h1>
+          <p class="view-sub">Simple, shareable summaries of each student's development.</p>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="form-row">
+          <div class="field">
+            <label for="rep-student">Student</label>
+            <select id="rep-student"></select>
+          </div>
+          <div class="field">
+            <label for="rep-range">Report period</label>
+            <select id="rep-range">
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="all">All time</option>
+            </select>
+          </div>
+          <div class="field field-btn">
+            <button class="btn btn-primary" id="btn-generate-report">📄 Generate Report</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="report-output">
+        <div class="empty-state">
+          <span class="empty-ico" aria-hidden="true">📄</span>
+          <p>Select a student and click <strong>Generate Report</strong> to preview a printable progress report.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== STUDENT MODAL ===================== -->
+<div class="modal-overlay" id="student-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modal-title">Add Student</h2>
+      <button class="modal-close" id="modal-close" aria-label="Close dialog">✕</button>
+    </div>
+    <form id="student-form">
+      <input type="hidden" id="sf-id">
+      <div class="field">
+        <label for="sf-name">Student name <span class="muted">(initials or nickname — no personal data)</span></label>
+        <input type="text" id="sf-name" required maxlength="40" placeholder="e.g. Alex T.">
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="sf-age">Age</label>
+          <input type="number" id="sf-age" min="3" max="21" placeholder="e.g. 8">
+        </div>
+        <div class="field">
+          <label for="sf-year">Class / Group</label>
+          <input type="text" id="sf-year" maxlength="20" placeholder="e.g. Rainbow 2">
+        </div>
+      </div>
+      <div class="field">
+        <label for="sf-notes">Support notes</label>
+        <textarea id="sf-notes" rows="3" maxlength="300" placeholder="e.g. Responds well to visual schedules and first-then boards."></textarea>
+      </div>
+      <fieldset class="goals-fieldset">
+        <legend>Learning goals</legend>
+        <div id="goals-editor"></div>
+        <button type="button" class="btn btn-ghost" id="btn-add-goal">+ Add goal</button>
+      </fieldset>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Student</button>
+        <button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== STUDENT DETAIL MODAL ===================== -->
+<div class="modal-overlay" id="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title" hidden>
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h2 id="detail-title">Student Profile</h2>
+      <button class="modal-close" id="detail-close" aria-label="Close dialog">✕</button>
+    </div>
+    <div id="detail-body"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
